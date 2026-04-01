@@ -23,7 +23,7 @@ POLARIS-CLI is a high-performance, autonomous command-line interface agent desig
 Install the package directly from source or via pip:
 
 ```bash
-pip install polaris-cli
+pip install polaris-agent
 ```
 
 ---

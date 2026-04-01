@@ -3,7 +3,7 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "polaris-cli"
+name = "polaris-agent"
 version = "0.1.0"
 description = "A highly polished, autonomous CLI-based LLM agent powered by Groq."
 readme = "README.md"
