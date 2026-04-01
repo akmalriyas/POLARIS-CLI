@@ -21,14 +21,14 @@ def show_branded_help():
     table.add_column("Command", style="bold magenta")
     table.add_column("Description", style="dim")
     
-    table.add_row("chat", "Enter interactive multi-turn session.")
-    table.add_row("keys", "Manage your Groq API keys.")
-    table.add_row("setup", "Run the configuration wizard.")
-    table.add_row("reset", "Clear all data and keys.")
-    table.add_row("/help", "Show this help message.")
+    table.add_row("chat", "Enter interactive session.")
+    table.add_row("keys", "Manage Groq keys.")
+    table.add_row("setup", "Run setup wizard.")
+    table.add_row("reset", "Clear all data.")
+    table.add_row("help", "Show this message.")
     
     console.print(table)
-    console.print("\n[dim]Powered by [bold]Groq API[/bold]. Developed by [bold]akmalriyas[/bold].[/dim]")
+    console.print("\n[dim]Developed by [bold]akmalriyas[/bold].[/dim]")
 
 def manage_keys_cli():
     """Handle the 'keys' subcommand."""
@@ -110,7 +110,12 @@ def main():
     parser.add_argument("--version", action="store_true", help="Show version")
     parser.add_argument("-h", "--help", action="store_true", help="Show help")
     
-    args, unknown = parser.parse_known_args()
+    # Robust argument handling for Windows .exe wrappers
+    argv = sys.argv[1:]
+    if argv and ("polaris-cli" in argv[0].lower() or "polaris_cli" in argv[0].lower()) and argv[0].endswith(".exe"):
+        argv = argv[1:]
+
+    args, unknown = parser.parse_known_args(argv)
 
     if args.version:
         from polaris_cli import __version__
@@ -144,7 +149,6 @@ def main():
     agent = Agent(client=client)
 
     if args.command == "chat":
-        print_banner()
         agent.chat()
         return
 
@@ -155,8 +159,7 @@ def main():
         print_banner()
         agent.run(user_prompt)
     else:
-        # No prompt, no command: show branded help or enter chat?
-        # Let's show help by default to guide the user
+        # guide the user
         show_branded_help()
 
 if __name__ == "__main__":

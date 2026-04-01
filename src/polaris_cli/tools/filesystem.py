@@ -60,3 +60,18 @@ def ls_dir(path: str = ".") -> str:
         return "\n".join(sorted(items))
     except Exception as e:
         return f"Error listing directory: {str(e)}"
+
+@tool(
+    name="write_file",
+    description="Write string content to a file at the specified path. This replaces the file if it exists. Use this for all file creation tasks to avoid terminal escaping issues."
+)
+def write_file(path: str, content: str) -> str:
+    """Safely write content to a file, creating parent directories if necessary."""
+    p = Path(path)
+    try:
+        p.parent.mkdir(parents=True, exist_ok=True)
+        with open(p, "w", encoding="utf-8") as f:
+            f.write(content)
+        return f"File successfully written to {path}."
+    except Exception as e:
+        return f"Error writing to file: {str(e)}"

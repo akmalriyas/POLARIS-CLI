@@ -12,6 +12,7 @@ class ToolRegistry:
         # Add filesystem tools
         self._register(filesystem.read_file._tool)
         self._register(filesystem.ls_dir._tool)
+        self._register(filesystem.write_file._tool)
         
         # Add search tools
         self._register(search.search_code._tool)

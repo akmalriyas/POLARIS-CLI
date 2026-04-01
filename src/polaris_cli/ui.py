@@ -20,9 +20,15 @@ custom_theme = Theme({
 
 console = Console(theme=custom_theme)
 
-# Gemini-style ASCII Art
+# Gemini-style ASCII Art (Slant Font)
 ASCII_ART = r"""[bold magenta]
- > POLARIS
+        ░█████████    ░██████   ░██            ░███    ░█████████  ░██████  ░██████   
+░██     ░██     ░██  ░██   ░██  ░██           ░██░██   ░██     ░██   ░██   ░██   ░██  
+ ░██    ░██     ░██ ░██     ░██ ░██          ░██  ░██  ░██     ░██   ░██  ░██         
+  ░██   ░█████████  ░██     ░██ ░██         ░█████████ ░█████████    ░██   ░████████  
+ ░██    ░██         ░██     ░██ ░██         ░██    ░██ ░██   ░██     ░██          ░██ 
+░██     ░██          ░██   ░██  ░██         ░██    ░██ ░██    ░██    ░██   ░██   ░██  
+        ░██           ░██████   ░██████████ ░██    ░██ ░██     ░██ ░██████  ░██████   
 [/bold magenta]"""
 
 def print_banner():
@@ -31,7 +37,7 @@ def print_banner():
     console.print("[dim]Tips for getting started:[/dim]")
     console.print("[dim]1. Ask questions, analyze files, or run commands.[/dim]")
     console.print("[dim]2. Be specific for the best results.[/dim]")
-    console.print("[dim]3. [bold magenta]/help[/bold magenta] for more information.[/dim]\n")
+    console.print("[dim]3. Use [bold magenta]help[/bold magenta] for more information.[/dim]\n")
 
 def print_message(role: str, content: str):
     """Print a message with Gemini-style icons."""
@@ -72,6 +78,10 @@ def print_error(text: str):
 def print_info(text: str):
     """Print an info message."""
     console.print(f"[italic dim]Responding with Groq AI...[/italic dim]")
+
+def print_success(text: str):
+    """Print a success message with the Gemini-style icon."""
+    console.print(f"[bold magenta]✦ [/bold magenta][success]{text}[/success]")
 
 def print_footer():
     """Print a footer with context info."""

@@ -25,29 +25,32 @@ class Router:
     def __init__(self, client: GroqClient):
         self.client = client
 
-    def classify_task(self, prompt: str) -> TaskClassification:
-        """Classify the user prompt and suggest a model using llama-3.1-8b-instant."""
+    def classify_task(self, prompt: str, recent_history: str = "") -> TaskClassification:
+        """Classify the user prompt based on context and suggest a model using llama-3.1-8b-instant."""
         
         system_prompt = (
-            "You are a task classifier for POLARIS-CLI. Your job is to analyze the user prompt and "
-            "determine the best model for the task. Respond ONLY in valid JSON format matching this schema:\n"
-            '{"category": "flagship" | "reasoning" | "heavy" | "smart" | "vision" | "light" | "versatile", "explanation": "...", "suggested_model": "..."}\n\n'
-            "Available categories and best-fit models:\n"
-            "- flagship: [openai/gpt-oss-120b] - Deep logic, system architecture, flagship reasoning.\n"
-            "- reasoning: [qwen/qwen3-32b, deepseek-r1-distill-llama-70b] - Intense mathematical logic, coding algorithms.\n"
-            "- heavy: [llama-3.3-70b-versatile] - Standard high-performance generation.\n"
-            "- smart: [groq/compound] - Multi-step autonomous tool use (web search, etc).\n"
-            "- vision: [meta-llama/llama-4-scout-17b-16e-instruct] - Image analysis, diagrams, visual context.\n"
-            "- light: [llama-3.1-8b-instant] - Fast responses, simple queries, terminal commands.\n"
-            "- versatile: [openai/gpt-oss-20b] - Balanced creative writing and code debugging."
+            "You are an intelligent task router for POLARIS-CLI. Analyze the user prompt and conversation history, and select the BEST model category. Respond ONLY in valid JSON matching this schema:\n"
+            '{"category": "flagship" | "reasoning" | "heavy" | "smart" | "vision" | "light" | "versatile", "explanation": "Short reasoning", "suggested_model": "..."}\n\n'
+            "RULES FOR CHOOSING CATEGORIES:\n"
+            "- reasoning: MUST BE USED for ANY code generation, debugging, writing files, or complex math logic. (E.g., 'write a python script', 'fix this bug').\n"
+            "- flagship: Use only for high-level system architecture, multi-file code planning, or deep repository structural analysis.\n"
+            "- heavy: Use for large text generation, long-form content, or standard advanced questions.\n"
+            "- smart: Use when the user explicitly asks to search the web or run multi-step autonomous pipelines.\n"
+            "- vision: Use ONLY for image analysis tasks.\n"
+            "- versatile: Use for balanced creative writing or general questions.\n"
+            "- light: MUST ONLY BE USED for simple greetings ('hello'), quick single terminal commands ('run ls'), or trivial questions."
         )
+
+        user_content = f"Task: {prompt}"
+        if recent_history:
+            user_content = f"Recent History:\n{recent_history}\n\nCurrent Task: {prompt}"
 
         try:
             response = self.client.request(
                 model="llama-3.1-8b-instant",
                 messages=[
                     {"role": "system", "content": system_prompt},
-                    {"role": "user", "content": f"Task: {prompt}"}
+                    {"role": "user", "content": user_content}
                 ],
                 response_format={"type": "json_object"}
             )
