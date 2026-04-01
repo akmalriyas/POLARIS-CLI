@@ -1,27 +1,26 @@
-# 🌌 POLARIS-CLI
+# POLARIS-CLI
 
-**POLARIS-CLI** is a high-performance, autonomous CLI-based LLM agent designed for developers who need speed and precision. Built on top of the **Groq API**, it leverages ultra-fast inference to execute multi-step tool calls, manage local files, and run terminal commands with near-instant responsiveness.
-
----
-
-## ✨ Features
-
-- ⚡ **Ultra-Fast Multi-Step Execution:** Powered by Groq's LPU™ Inference Engine.
-- 🛡️ **Resilient API Management:** Automatic key rotation and failover for 429 (Rate Limit) and 401 (Unauthorized) errors.
-- 🧠 **Autonomous Model Router:** Intelligent task classification to route requests between Heavy (70B+), Vision, and Light (8B) models.
-- 🛠️ **Built-in Agentic Tools:**
-    - `read_file` / `list_directory`
-    - `search_codebase` (Fast grep-style search)
-    - `run_terminal_command`
-    - `get_system_info`
-- 🎨 **Premium Terminal UI:** Beautifully crafted interface using `rich` with ASCII art, status indicators, and syntax-highlighted Markdown.
-- 🔒 **Secure Configuration:** Local API key storage with restricted file permissions.
+POLARIS-CLI is a high-performance, autonomous command-line interface agent designed for developers. Engineered for speed and precision, it leverages the Groq LPU™ Inference Engine to execute complex multi-step reasoning, filesystem operations, and terminal tasks with near-instant responsiveness.
 
 ---
 
-## 🚀 Installation
+<details>
+<summary><b>Key Features</b></summary>
 
-Install via pip:
+*   **Autonomous Reasoning:** Employs a ReAct (Reasoning and Action) loop to solve complex tasks using integrated tools.
+*   **Intelligent Model Routing:** Automatically classifies tasks to utilize the most efficient model, ranging from lightweight 8B models to flagship 120B+ architectures.
+*   **Native Vision Support:** Seamlessly processes local image files (PNG, JPG, WebP) using state-of-the-art multimodal vision models.
+*   **Resilient API Client:** Features automatic key rotation and sophisticated error handling for high-availability performance.
+*   **Secure Configuration:** Implements OS-native secure storage for API credentials with restricted file permissions.
+*   **Premium Terminal UI:** Minimalist, branded interface featuring real-time status indicators and syntax-highlighted output.
+
+</details>
+
+---
+
+## Installation
+
+Install the package directly from source or via pip:
 
 ```bash
 pip install polaris-cli
@@ -29,49 +28,77 @@ pip install polaris-cli
 
 ---
 
-## 🛠️ Getting Started
+## Getting Started
 
-### 1. First-Run Setup
-On your first run, POLARIS-CLI will guide you through an interactive setup to add your Groq API keys.
+### Initial Configuration
+Upon first execution, POLARIS-CLI will launch an interactive wizard to configure your Groq API keys.
 
 ```bash
-polaris-cli
+polaris-cli setup
 ```
 
-### 2. Managing API Keys
-You can add more keys later to increase your rate limit headroom:
+### Basic Interaction
+Enter an interactive multi-turn session to chat with the agent:
 
 ```bash
-polaris-cli --add-key
+polaris-cli chat
 ```
 
-### 3. Basic Usage
-Ask a question or give a command:
+Or execute a single one-off task:
 
 ```bash
-polaris-cli "Analyze the performance of my current project"
+polaris-cli "Write a python script that analyzes the current directory"
 ```
 
 ---
 
-## 🧠 Model Routing Logic
+<details>
+<summary><b>Available Commands</b></summary>
 
-POLARIS-CLI automatically selects the best model for the job:
+| Command | Description |
+|:--- |:--- |
+| `chat` | Enter the interactive, stateful multi-turn session. |
+| `keys` | Manage and rotate your Groq API keys. |
+| `setup` | Launch the first-run configuration wizard. |
+| `reset` | Securely clear all local configuration and cached keys. |
+| `help` | Display the branded help interface and usage guide. |
 
-- **Flagship:** `openai/gpt-oss-120b` for maximum reasoning and complex architecture.
-- **Reasoning:** `qwen-qwq-32b` or `deepseek-r1-distill-llama-70b` for intense logic/math.
-- **Heavy:** `llama-3.3-70b-versatile` for high-end generation.
-- **Smart:** `groq/compound` for autonomous multi-step tool use.
-- **Vision:** `meta-llama/llama-4-scout-17b-16e-instruct` for state-of-the-art visual context.
-- **Versatile:** `openai/gpt-oss-20b` or `mixtral-8x7b-32768` for standard coding and writing.
-- **Light:** `llama-3.1-8b-instant` for routing and simple tasks.
-
----
-
-## ⚖️ License
-
-Distributed under the **MIT License**. See `LICENSE` for more information.
+</details>
 
 ---
 
-**Made with ❤️ by [akmalriyas](https://github.com/akmalriyas)**
+<details>
+<summary><b>Autonomous Toolset</b></summary>
+
+POLARIS-CLI provides the agent with a suite of low-level system capabilities:
+
+*   **Filesystem:** `read_file`, `write_file`, and `ls_dir` for direct file manipulation.
+*   **System:** `run_cmd` for terminal execution and `sys_get_info` for environment awareness.
+*   **Search:** `search_code` for fast, recursive grep-style regex searching across the codebase.
+
+</details>
+
+---
+
+<details>
+<summary><b>Intelligent Model Routing</b></summary>
+
+The agent dynamically routes tasks to specialized models based on complexity and intent:
+
+*   **Flagship Logic:** `openai/gpt-oss-120b` (System Architecture)
+*   **Deep Reasoning:** `qwen/qwen3-32b` (Complex Coding & Math)
+*   **Heavy Generation:** `llama-3.3-70b-versatile` (Long-form content)
+*   **Native Vision:** `meta-llama/llama-4-scout-17b-16e-instruct` (Multimodal analysis)
+*   **Light Execution:** `llama-3.1-8b-instant` (Greetings & Terminal commands)
+
+</details>
+
+---
+
+## License
+
+Distributed under the MIT License. See `LICENSE` for more information.
+
+---
+
+Created with ❤️ by [akmalriyas](https://github.com/akmalriyas)
