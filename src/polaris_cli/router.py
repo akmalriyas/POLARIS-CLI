@@ -5,7 +5,7 @@ from pydantic import BaseModel, Field
 from polaris_cli.client import GroqClient
 
 class TaskClassification(BaseModel):
-    category: Literal["heavy", "smart", "vision", "light", "versatile"] = Field(..., description="Complexity and type of the task")
+    category: Literal["flagship", "reasoning", "heavy", "smart", "vision", "light", "versatile"] = Field(..., description="Complexity and type of the task")
     explanation: str = Field(..., description="Short explanation for the classification")
     suggested_model: str = Field(..., description="ID of the model to use")
 
@@ -13,11 +13,13 @@ class Router:
     """Intelligently routes tasks to the most appropriate Groq model."""
     
     MODELS = {
-        "heavy": "llama-3.3-70b-versatile", # Or openai/gpt-oss-120b if preferred
-        "smart": "groq/compound",           # Multi-step tool execution system
-        "vision": "llama-3.2-11b-vision-preview",
+        "flagship": "openai/gpt-oss-120b",    
+        "reasoning": "qwen/qwen3-32b",          
+        "heavy": "llama-3.3-70b-versatile",   
+        "smart": "groq/compound",             
+        "vision": "meta-llama/llama-4-scout-17b-16e-instruct", 
         "light": "llama-3.1-8b-instant",
-        "versatile": "mixtral-8x7b-32768"
+        "versatile": "openai/gpt-oss-20b"     
     }
 
     def __init__(self, client: GroqClient):
@@ -29,39 +31,37 @@ class Router:
         system_prompt = (
             "You are a task classifier for POLARIS-CLI. Your job is to analyze the user prompt and "
             "determine the best model for the task. Respond ONLY in valid JSON format matching this schema:\n"
-            '{"category": "heavy" | "smart" | "vision" | "light" | "versatile", "explanation": "...", "suggested_model": "..."}\n\n'
-            "Available models and use cases:\n"
-            "- heavy: [llama-3.3-70b-versatile, openai/gpt-oss-120b] - Deep reasoning, complex logic, large context.\n"
-            "- smart: [groq/compound] - Complex multi-step tool execution, web search, code execution (The most capable system).\n"
-            "- vision: [llama-3.2-11b-vision-preview] - Image analysis or visual context.\n"
-            "- light: [llama-3.1-8b-instant] - Fast responses, simple definitions, terminal routing.\n"
-            "- versatile: [mixtral-8x7b-32768] - Good balance of speed and reasoning, excellent for coding assistance."
+            '{"category": "flagship" | "reasoning" | "heavy" | "smart" | "vision" | "light" | "versatile", "explanation": "...", "suggested_model": "..."}\n\n'
+            "Available categories and best-fit models:\n"
+            "- flagship: [openai/gpt-oss-120b] - Deep logic, system architecture, flagship reasoning.\n"
+            "- reasoning: [qwen/qwen3-32b, deepseek-r1-distill-llama-70b] - Intense mathematical logic, coding algorithms.\n"
+            "- heavy: [llama-3.3-70b-versatile] - Standard high-performance generation.\n"
+            "- smart: [groq/compound] - Multi-step autonomous tool use (web search, etc).\n"
+            "- vision: [meta-llama/llama-4-scout-17b-16e-instruct] - Image analysis, diagrams, visual context.\n"
+            "- light: [llama-3.1-8b-instant] - Fast responses, simple queries, terminal commands.\n"
+            "- versatile: [openai/gpt-oss-20b] - Balanced creative writing and code debugging."
         )
 
-        response = self.client.request(
-            model="llama-3.1-8b-instant",
-            messages=[
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": f"Task: {prompt}"}
-            ],
-            response_format={"type": "json_object"}
-        )
-
-        content = response.choices[0].message.content
-        data = json.loads(content)
+        try:
+            response = self.client.request(
+                model="llama-3.1-8b-instant",
+                messages=[
+                    {"role": "system", "content": system_prompt},
+                    {"role": "user", "content": f"Task: {prompt}"}
+                ],
+                response_format={"type": "json_object"}
+            )
+            content = response.choices[0].message.content
+            data = json.loads(content)
+        except Exception:
+            # Absolute fallback if classification fails
+            data = {"category": "light", "explanation": "Auto-routed due to classification failure.", "suggested_model": "llama-3.1-8b-instant"}
         
-        # Ensure the suggested_model is valid or fallback to a default for that category
+        # Validation mapping if model ID is missing (ensure exact IDs from MODELS dict)
         category = data.get("category", "light")
-        suggested = data.get("suggested_model")
-        
-        # Validation mapping if model ID is generic or missing
-        if category == "smart":
-            data["suggested_model"] = "groq/compound"
-        elif category == "vision":
-            data["suggested_model"] = "llama-3.2-11b-vision-preview"
-        elif category == "versatile":
-            data["suggested_model"] = "mixtral-8x7b-32768"
-        elif not suggested or suggested not in ["llama-3.3-70b-versatile", "openai/gpt-oss-120b", "llama-3.1-8b-instant"]:
-             data["suggested_model"] = self.MODELS.get(category, "llama-3.1-8b-instant")
+        if category in self.MODELS:
+            data["suggested_model"] = self.MODELS[category]
+        else:
+             data["suggested_model"] = self.MODELS.get("light")
 
         return TaskClassification(**data)

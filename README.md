@@ -58,8 +58,12 @@ polaris-cli "Analyze the performance of my current project"
 
 POLARIS-CLI automatically selects the best model for the job:
 
-- **Heavy:** `llama-3.3-70b-versatile` or `openai/gpt-oss-120b` for complex logic.
-- **Vision:** `llama-3.2-11b-vision-preview` if images or visual context are provided.
+- **Flagship:** `openai/gpt-oss-120b` for maximum reasoning and complex architecture.
+- **Reasoning:** `qwen-qwq-32b` or `deepseek-r1-distill-llama-70b` for intense logic/math.
+- **Heavy:** `llama-3.3-70b-versatile` for high-end generation.
+- **Smart:** `groq/compound` for autonomous multi-step tool use.
+- **Vision:** `meta-llama/llama-4-scout-17b-16e-instruct` for state-of-the-art visual context.
+- **Versatile:** `openai/gpt-oss-20b` or `mixtral-8x7b-32768` for standard coding and writing.
 - **Light:** `llama-3.1-8b-instant` for routing and simple tasks.
 
 ---

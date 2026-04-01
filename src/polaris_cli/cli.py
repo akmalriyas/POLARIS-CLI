@@ -14,19 +14,18 @@ from polaris_cli.ui import console, print_banner, print_info, print_error, print
 
 def show_branded_help():
     """Display a premium branded help screen."""
+    from polaris_cli.ui import print_banner
     print_banner()
     
-    table = Table(title="[bold cyan]🌌 POLARIS-CLI Commands & Options[/bold cyan]", show_header=True, header_style="bold blue")
-    table.add_column("Command", style="cyan", no_wrap=True)
-    table.add_column("Description", style="white")
+    table = Table(box=None, padding=(0, 2))
+    table.add_column("Command", style="bold magenta")
+    table.add_column("Description", style="dim")
     
-    table.add_row("polaris-cli <prompt>", "Run a single autonomous task.")
-    table.add_row("polaris-cli chat", "Enter interactive multi-turn session.")
-    table.add_row("polaris-cli keys", "Manage your Groq API keys (list/add/remove).")
-    table.add_row("polaris-cli setup", "Run the first-time setup wizard manually.")
-    table.add_row("polaris-cli reset", "Clear all configuration and keys.")
-    table.add_row("polaris-cli help", "Show this help message.")
-    table.add_row("--version", "Show the current version.")
+    table.add_row("chat", "Enter interactive multi-turn session.")
+    table.add_row("keys", "Manage your Groq API keys.")
+    table.add_row("setup", "Run the configuration wizard.")
+    table.add_row("reset", "Clear all data and keys.")
+    table.add_row("/help", "Show this help message.")
     
     console.print(table)
     console.print("\n[dim]Powered by [bold]Groq API[/bold]. Developed by [bold]akmalriyas[/bold].[/dim]")
