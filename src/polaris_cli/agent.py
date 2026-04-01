@@ -1,4 +1,7 @@
 import json
+import base64
+import os
+import mimetypes
 from typing import List, Dict, Any, Optional
 
 from polaris_cli.client import GroqClient
@@ -27,7 +30,35 @@ class Agent:
             {"role": "system", "content": self.SYSTEM_PROMPT}
         ]
 
-    def _sanitize_history(self) -> List[Dict[str, Any]]:
+    def _extract_images_from_prompt(self, prompt: str) -> List[str]:
+        words = prompt.split()
+        paths = []
+        for word in words:
+            clean_word = word.strip("'\".,;:]!?)(")
+            if clean_word.lower().endswith(('.png', '.jpg', '.jpeg', '.gif', '.webp')):
+                if os.path.isfile(clean_word):
+                    paths.append(clean_word)
+        return paths
+
+    def _format_vision_content(self, prompt: str, image_paths: List[str]) -> List[Dict[str, Any]]:
+        content = [{"type": "text", "text": prompt}]
+        for path in image_paths:
+            try:
+                mime_type, _ = mimetypes.guess_type(path)
+                mime_type = mime_type or "image/jpeg"
+                with open(path, "rb") as f:
+                    b64 = base64.b64encode(f.read()).decode("utf-8")
+                content.append({
+                    "type": "image_url",
+                    "image_url": {
+                        "url": f"data:{mime_type};base64,{b64}"
+                    }
+                })
+            except Exception as e:
+                console.print(f"[dim red]Failed to load image {path}: {e}[/dim red]")
+        return content
+
+    def _sanitize_history(self, target_model: str) -> List[Dict[str, Any]]:
         """Strictly rebuild message history to prevent API errors from unexpected fields."""
         sanitized = []
         for msg in self.history:
@@ -45,7 +76,12 @@ class Agent:
             if "role" in msg_dict:
                 safe_msg["role"] = msg_dict["role"]
             if "content" in msg_dict:
-                safe_msg["content"] = msg_dict["content"]
+                c = msg_dict["content"]
+                if isinstance(c, list) and target_model != self.router.MODELS.get("vision", ""):
+                    text_parts = [item.get("text", "") for item in c if isinstance(item, dict) and item.get("type", "") == "text"]
+                    safe_msg["content"] = "\n".join(text_parts)
+                else:
+                    safe_msg["content"] = c
             if "name" in msg_dict:
                 safe_msg["name"] = msg_dict["name"]
             if "tool_call_id" in msg_dict:
@@ -73,6 +109,8 @@ class Agent:
     def run(self, prompt: str, classification: Optional[TaskClassification] = None):
         """Execute a single task with autonomous tool use."""
         try:
+            images = self._extract_images_from_prompt(prompt)
+            
             if not classification:
                 with show_status("Classifying task"):
                     # Extract last 4 messages for context (excluding system prompt)
@@ -86,16 +124,30 @@ class Agent:
                     history_lines = []
                     for m in recent:
                         role = m.get("role", "unknown") if isinstance(m, dict) else getattr(m, "role", "unknown")
-                        content = m.get("content") if isinstance(m, dict) else getattr(m, "content", None)
-                        history_lines.append(f"{role.capitalize()}: {content or '(used tool)'}")
+                        
+                        c = m.get("content") if isinstance(m, dict) else getattr(m, "content", None)
+                        if isinstance(c, list):
+                            text_parts = [item.get("text", "") for item in c if isinstance(item, dict) and item.get("type", "") == "text"]
+                            c = " ".join(text_parts)
+                            
+                        history_lines.append(f"{role.capitalize()}: {c or '(used tool)'}")
                         
                     history_str = "\n".join(history_lines)
                     classification = self.router.classify_task(prompt, history_str)
+
+            if images and classification.category != "vision":
+                classification.category = "vision"
+                classification.suggested_model = self.router.MODELS.get("vision", "meta-llama/llama-4-scout-17b-16e-instruct")
             
             # Gemini-style: Show which category is being used
             console.print(f"[italic dim]Responding with {classification.suggested_model}...[/italic dim]")
             
-            self.history.append({"role": "user", "content": prompt})
+            if classification.category == "vision" and images:
+                content_payload = self._format_vision_content(prompt, images)
+            else:
+                content_payload = prompt
+                
+            self.history.append({"role": "user", "content": content_payload})
             
             # Max steps to prevent infinite loops
             max_steps = 10
@@ -103,7 +155,7 @@ class Agent:
                 with show_status("Thinking"):
                     response = self.client.request(
                         model=classification.suggested_model,
-                        messages=self._sanitize_history(),
+                        messages=self._sanitize_history(classification.suggested_model),
                         tools=self.registry.get_schemas(),
                         tool_choice="auto"
                     )

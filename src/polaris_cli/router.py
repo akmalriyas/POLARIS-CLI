@@ -36,7 +36,7 @@ class Router:
             "- flagship: Use only for high-level system architecture, multi-file code planning, or deep repository structural analysis.\n"
             "- heavy: Use for large text generation, long-form content, or standard advanced questions.\n"
             "- smart: Use when the user explicitly asks to search the web or run multi-step autonomous pipelines.\n"
-            "- vision: Use ONLY for image analysis tasks.\n"
+            "- vision: Use ONLY for image analysis tasks (e.g. prompt contains .png or .jpg).\n"
             "- versatile: Use for balanced creative writing or general questions.\n"
             "- light: MUST ONLY BE USED for simple greetings ('hello'), quick single terminal commands ('run ls'), or trivial questions."
         )
